@@ -169,12 +169,20 @@ def imageToJson(filename):
     def keyCheck(keyL):
         if keyL in ["Biling Name", "Blling Name", "Bling Name"]:
             keyL = "Billing Name"
-        if keyL in ["Technical Fhone"]:
+        if keyL in ["Technical Fhone", "Technical Phane"]:
             keyL = "Technical Phone"
         if keyL in ["Technical Campany"]:
             keyL = "Technical Company"
+        if keyL in ["Domains Status", "Damain Status"]:
+            keyL = "Domain Status"
         return keyL
 
+    listOfKeys = ["Domain Name", "Domain Registrar Name", "Domain Registrar URL", "Registrant Name",
+                  "Registrant Company", "Registrant Address", "Registrant Email", "Registrant Phone",
+                  "Administrative Name", "Administrative Company", "Administrative Address", "Administrative Email",
+                  "Administrative Phone", "Technical Name", "Technical Company", "Technical Address",
+                  "Technical Email", "Technical Phone", "Billing Name", "Billing Company", "Billing Email",
+                  "Billing Phone", "Server Name", "Domain Status", "Expiry /Date"]
     for i in lines.keys():
         next_pos = get_next_line(i, lines)
         if next_pos is None:
@@ -195,7 +203,14 @@ def imageToJson(filename):
                     key = key.replace(item, '')
             key = key.strip()
             key = keyCheck(key)
-            imageData[key] = ""
+            if key == "":
+                continue
+            else:
+                imageData[key] = ""
+                try:
+                    listOfKeys.pop(int(listOfKeys.index(key)))
+                except:
+                    continue
             # Right Column
             start_x = end_x + 3
             end_x = int(lines["v2"]["x1"])
@@ -207,4 +222,7 @@ def imageToJson(filename):
             keyValue = keyValue.strip()
             imageData[key] = keyValue
 
+    for i in listOfKeys:
+        if i not in imageData.keys():
+            imageData[i] = ""
     return imageData

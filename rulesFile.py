@@ -16,7 +16,7 @@ def clean(jsonVar):
     applicableFieldsList = ["Domain Name", "Domain Registrar URL", "Registrant Email", "Registrant Phone",
                             "Administrative Email", "Administrative Phone", "Technical Email", "Technical Phone",
                             "Billing Email", "Billing Phone"]
-    blackListChars = [",", ";", "\n", " "]
+    blackListChars = [",", ";", "\n", " ", "$"]
     for i in applicableFieldsList:
         text = str(jsonVar[i])
         for j in blackListChars:
@@ -67,21 +67,21 @@ def rule_3(jsonVar):
     applicableFieldsList = ["Registrant Address", "Administrative Address", "Technical Address"]
     for i in applicableFieldsList:
         text = str(jsonVar[i])
-        text = str(text.replace(",", "^^"))
-        if "^^ " in text:
-            text = text.replace("^^ ", "^^")
-        if " ^^" in text:
-            text = text.replace(" ^^", "^^")
+        text = str(text.replace(",", ",  "))
+        # if "^^ " in text:
+        #     text = text.replace("^^ ", "^^")
+        # if " ^^" in text:
+        #     text = text.replace(" ^^", "^^")
         text = text.replace("\n", "")
         jsonVar[i] = text
     applicableFieldsList = set(jsonVar.keys()) - set(applicableFieldsList)
     for i in applicableFieldsList:
         text = str(jsonVar[i])
-        text = str(text.replace(",", "^"))
-        if "^ " in text:
-            text = text.replace("^ ", "^")
-        if " ^" in text:
-            text = text.replace(" ^", "^")
+        text = str(text.replace(",", " "))
+        # if "^ " in text:
+        #     text = text.replace("^ ", "^")
+        # if " ^" in text:
+        #     text = text.replace(" ^", "^")
         text = text.replace("\n", "")
         jsonVar[i] = text
     return jsonVar
@@ -99,24 +99,21 @@ def rule_4(jsonVar):
 # RULE 5: Double Space(^^) after fullstops(.), omit if fullstops is at end
 def rule_5(jsonVar):
     applicableFieldsList = set(jsonVar.keys()) - set(list(["Domain Name", "Domain Registrar URL", "Expiry /Date",
-                                                           "Registrant Email", "Registrant Phone",
-                                                           "Administrative Email", "Administrative Phone",
-                                                           "Technical Email", "Technical Phone",
-                                                           "Billing Email", "Billing Phone",
-                                                           "Server Name"]))
+                                                           "Registrant Email", "Administrative Email", "Administrative Phone",
+                                                           "Technical Email", "Billing Email", "Server Name"]))
     for i in applicableFieldsList:
         text = jsonVar[i]
         fullStopFlag = False
         if text[:-1] == ".":
             text = text[:-1]
             fullStopFlag = True
-        text = text.replace(".", "^^")
+        text = text.replace(".", "  ")
         if fullStopFlag:
             text = text.join(text, ".")
-        if "^^ " in text:
-            text = text.replace("^^ ", "^^")
-        if " ^^" in text:
-            text = text.replace(" ^^", "^^")
+        # if "^^ " in text:
+        #     text = text.replace("^^ ", "^^")
+        # if " ^^" in text:
+        #     text = text.replace(" ^^", "^^")
         text = text.replace("\n", "")
         jsonVar[i] = text
     return jsonVar
@@ -130,13 +127,13 @@ def rule_6(jsonVar):
     superScripts = {"1": "st", "2": "nd", "3": "rd"}
     if str(int(date[0])) in superScripts.keys():
         dateText += superScripts[str(int(date[0]))]
-        dateText += "^"
+        dateText += " "
     else:
-        dateText += "th^"
+        dateText += "th "
     months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
               "November", "December"]
     dateText += months[int(date[1]) - 1]
-    dateText = dateText + ",^^" + date[2] + "."
+    dateText = dateText + ",  " + date[2] + "."
     jsonVar["Expiry /Date"] = dateText
     return jsonVar
 
@@ -165,4 +162,3 @@ def rule_8(jsonVar):
     if jsonVar["Technical Email"] != "<B>Not Mentioned</B>":
         jsonVar["Technical Email"] = "<I><U>" + jsonVar["Technical Email"]
     return jsonVar
-
