@@ -24,7 +24,7 @@ def imageToJson(filename):
     rho = 2
     theta = np.pi / 180
     threshold = 80
-    minLinLength = 220
+    minLinLength = 290
     maxLineGap = 7
     linesP = cv.HoughLinesP(canny, rho, theta, threshold, None, minLinLength, maxLineGap)
 

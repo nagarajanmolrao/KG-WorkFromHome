@@ -45,13 +45,12 @@ def rule_1(jsonVar):
 def rule_2(jsonVar):
     abbreviations = {
         "Inc.": "Incorporation", "Ltd.": "Limited", "Ave.": "Avenue", "Ct.": "Court", "Ste.": "Suite",
-        "Pkwy.": "Parkway", "Ln.": "Lane", "Dr": "Drive", "Dr,": "Drive,^^", "Pl.": "Place", "Blvd.": "Boulevard",
+        "Pkwy.": "Parkway", "Ln.": "Lane", "Dr": "Drive", "Dr,": "Drive,  ", "Pl.": "Place", "Blvd.": "Boulevard",
         "Apt.": "Apartment", "Rd.": "Road", "Pvt.": "Private", "Corp.": "Corporation",
         "EW.": "East West", "SN.": "South North", "SW.": "South West", "LLC": "Limited Liability Company",
         "Co.": "Company"
     }
-    applicableFieldsList = set(jsonVar.keys()) - set(list(["Registrant Address", "Administrative Address",
-                                                           "Technical Address"]))
+    applicableFieldsList = jsonVar.keys()
     for i in applicableFieldsList:
         for abbv in abbreviations.keys():
             if abbv in str(jsonVar[i]):
@@ -61,27 +60,20 @@ def rule_2(jsonVar):
     return jsonVar
 
 
-# RULE 3: (Double Space(^^) after comma(,) in Registrant, Administrative and Technical Address) &
+# RULE 3: (Double Space(^^) after comma(,) in Registrant, Administrative and Technical Address and Phone &
 # (Single space(^) after comma(,) in rest of the fields)
 def rule_3(jsonVar):
-    applicableFieldsList = ["Registrant Address", "Administrative Address", "Technical Address"]
+    applicableFieldsList = ["Registrant Address", "Administrative Address", "Technical Address",
+                            "Registrant Phone", "Administrative Phone", "Technical Phone", "Billing Phone"]
     for i in applicableFieldsList:
         text = str(jsonVar[i])
         text = str(text.replace(",", ",  "))
-        # if "^^ " in text:
-        #     text = text.replace("^^ ", "^^")
-        # if " ^^" in text:
-        #     text = text.replace(" ^^", "^^")
         text = text.replace("\n", "")
         jsonVar[i] = text
     applicableFieldsList = set(jsonVar.keys()) - set(applicableFieldsList)
     for i in applicableFieldsList:
         text = str(jsonVar[i])
-        text = str(text.replace(",", " "))
-        # if "^ " in text:
-        #     text = text.replace("^ ", "^")
-        # if " ^" in text:
-        #     text = text.replace(" ^", "^")
+        text = str(text.replace(",", ", "))
         text = text.replace("\n", "")
         jsonVar[i] = text
     return jsonVar
@@ -107,13 +99,9 @@ def rule_5(jsonVar):
         if text[:-1] == ".":
             text = text[:-1]
             fullStopFlag = True
-        text = text.replace(".", "  ")
+        text = text.replace(".", ".  ")
         if fullStopFlag:
             text = text.join(text, ".")
-        # if "^^ " in text:
-        #     text = text.replace("^^ ", "^^")
-        # if " ^^" in text:
-        #     text = text.replace(" ^^", "^^")
         text = text.replace("\n", "")
         jsonVar[i] = text
     return jsonVar
@@ -123,10 +111,12 @@ def rule_5(jsonVar):
 def rule_6(jsonVar):
     date = str(jsonVar["Expiry /Date"])
     date = date.split("-")
-    dateText = str(int(date[0]))
-    superScripts = {"1": "st", "2": "nd", "3": "rd"}
-    if str(int(date[0])) in superScripts.keys():
-        dateText += superScripts[str(int(date[0]))]
+    dateText = str(date[0])
+    if len(dateText) == 1:
+        dateText = "0" + dateText
+    superScripts = {"01": "st", "02": "nd", "03": "rd"}
+    if dateText in superScripts.keys():
+        dateText += superScripts[dateText]
         dateText += " "
     else:
         dateText += "th "
@@ -161,4 +151,8 @@ def rule_8(jsonVar):
     # Technical Email
     if jsonVar["Technical Email"] != "<B>Not Mentioned</B>":
         jsonVar["Technical Email"] = "<I><U>" + jsonVar["Technical Email"]
+    # If email fields is Empty add "<I><U>" before "Not Mentioned"
+    for i in ["Registrant Email", "Administrative Email", "Technical Email", "Billing Email"]:
+        if jsonVar[i] == "<B>Not Mentioned</B>":
+            jsonVar[i] = "<I><U>Not Mentioned"
     return jsonVar
